@@ -3,13 +3,13 @@ lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
-  spec.name          = "google-spreadsheet-recorder"
+  spec.name          = "google_spreadsheet_recorder"
   spec.version       = "0.0.1"
   spec.authors       = ["saeki"]
   spec.email         = ["nobuo.seaki@gmail.com"]
   spec.summary       = %q{Simple google spreadsheet data uploader.}
   spec.description   = %q{}
-  spec.homepage      = "https://github.com/nsaeki/google-spreadsheet-recorder"
+  spec.homepage      = "https://github.com/nsaeki/google_spreadsheet_recorder"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
