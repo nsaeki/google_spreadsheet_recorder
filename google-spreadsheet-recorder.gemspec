@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["nobuo.seaki@gmail.com"]
   spec.summary       = %q{Simple google spreadsheet data uploader.}
   spec.description   = %q{}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/nsaeki/google-spreadsheet-recorder"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
