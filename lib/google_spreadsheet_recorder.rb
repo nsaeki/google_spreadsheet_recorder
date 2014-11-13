@@ -82,7 +82,7 @@ class GoogleSpreadsheetRecorder
     print "access this url and paste access code: "
     puts auth_url
     print "input access_code: "
-    access_code = gets.strip
+    access_code = $stdin.gets.strip
     puts "access code is #{access_code}"
 
     # returns token

@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "google_spreadsheet_recorder"
-  spec.version       = "0.0.2"
+  spec.version       = "0.0.3"
   spec.authors       = ["saeki"]
   spec.email         = ["nobuo.seaki@gmail.com"]
   spec.summary       = %q{Simple google spreadsheet data uploader.}
