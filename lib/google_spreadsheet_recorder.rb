@@ -9,12 +9,9 @@ class GoogleSpreadsheetRecorder
 
   attr_accessor :spreadsheet_key
 
-  def initialize(client_id, client_secret, token_file, spreadsheet_key = nil)
-    @client_id = client_id
-    @client_secret = client_secret
-    @token_file = token_file
+  def initialize(client_id, client_secret, token_file, spreadsheet_key)
+    @token = load_or_refresh_token(client_id, client_secret, token_file)
     @spreadsheet_key = spreadsheet_key
-    load_or_refresh_token
   end
 
   def worksheets(spreadsheet_key = nil)
@@ -58,40 +55,41 @@ class GoogleSpreadsheetRecorder
 
   private
 
-  def load_or_refresh_token
-    google_oauth_params = {
+  def load_or_refresh_token(client_id, client_secret, token_file)
+    oauth_params = {
       site: 'https://accounts.google.com',
       authorize_url: '/o/oauth2/auth',
       token_url: '/o/oauth2/token',
     }
-    client = OAuth2::Client.new(@client_id, @client_secret, google_oauth_params)
 
-    if File.exists?(@token_file)
-      @token = OAuth2::AccessToken.from_hash(client, YAML.load_file(@token_file))
+    client = OAuth2::Client.new(client_id, client_secret, oauth_params)
 
-      if @token.expired?
-        puts "Token was expired at #{Time.at(@token.expires_at)}. Refresh one"
-        @token = @token.refresh!
-        puts "New token will be expired at #{Time.at(@token.expires_at)}."
-        save_token
+    if File.exists?(token_file)
+      token = OAuth2::AccessToken.from_hash(client, YAML.load_file(token_file))
+
+      if token.expired?
+        puts "Token has been expired at #{Time.at(token.expires_at)}. Refresh one"
+        token = token.refresh!
+        puts "New token will be expired at #{Time.at(token.expires_at)}."
+        save_token(token_file, token)
       end
     else
-      @token = authorize_with_access_code(client)
-      save_token
+      token = authorize_with_access_code(client)
+      save_token(token_file, token)
     end
+
+    token
   end
 
-  def save_token
-    IO.write(@token_file, YAML.dump(@token.to_hash))
+  def save_token(token_file, token)
+    IO.write(token_file, YAML.dump(token.to_hash))
   end
 
   def authorize_with_access_code(client)
     auth_url = client.auth_code.authorize_url(redirect_uri: REDIRECT_URI, scope: SCOPE)
-    print "access this url and paste access code: "
-    puts auth_url
+    puts "access this url and paste access code: #{auth_url}"
     print "input access_code: "
     access_code = $stdin.gets.strip
-    puts "access code is #{access_code}"
 
     # returns token
     client.auth_code.get_token(access_code, redirect_uri: REDIRECT_URI)
