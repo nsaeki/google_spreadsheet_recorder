@@ -12,12 +12,13 @@ class GoogleSpreadsheetRecorder
   def initialize(client_id, client_secret, token_file, spreadsheet_key)
     @token = load_or_refresh_token(client_id, client_secret, token_file)
     @spreadsheet_key = spreadsheet_key
+    if @spreadsheet_key.nil? || @spreadsheet_key.empty?
+      raise ArgumentError("Must specify spreadsheet_key")
+    end
   end
 
-  def worksheets(spreadsheet_key = nil)
-    key = spreadsheet_key || @spreadsheet_key
-    raise ArgumentError("Must specify spreadsheet_key") if key.nil? || key.empty?
-    url = "https://spreadsheets.google.com/feeds/worksheets/#{key}/private/full"
+  def worksheets
+    url = "https://spreadsheets.google.com/feeds/worksheets/#{@spreadsheet_key}/private/full"
     response = @token.get(url)
     doc = Nokogiri::XML(response.body)
     doc.css('feed entry').map do |e|
@@ -29,9 +30,7 @@ class GoogleSpreadsheetRecorder
   end
 
   def rows(sheet_id)
-    key = @spreadsheet_key
-    raise ArgumentError("Must specify spreadsheet_key") if key.nil? || key.empty?
-    url = "https://spreadsheets.google.com/feeds/list/#{key}/#{sheet_id}/private/full"
+    url = "https://spreadsheets.google.com/feeds/list/#{@spreadsheet_key}/#{sheet_id}/private/full"
     response = @token.get(url)
     doc = Nokogiri::XML(response.body)
     doc.css('entry').map do |e|
@@ -40,9 +39,7 @@ class GoogleSpreadsheetRecorder
   end
 
   def send_row(row_data, sheet_id)
-    key = @spreadsheet_key
-    raise ArgumentError("Must specify spreadsheet_key") if key.nil? || key.empty?
-    url = "https://spreadsheets.google.com/feeds/list/#{key}/#{sheet_id}/private/full"
+    url = "https://spreadsheets.google.com/feeds/list/#{@spreadsheet_key}/#{sheet_id}/private/full"
     body = <<-"EOS"
       <entry xmlns="http://www.w3.org/2005/Atom"
           xmlns:gsx="http://schemas.google.com/spreadsheets/2006/extended">
