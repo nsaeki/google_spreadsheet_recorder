@@ -6,6 +6,11 @@ require 'nokogiri'
 class GoogleSpreadsheetRecorder
   SCOPE = 'https://spreadsheets.google.com/feeds'
   REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
+  OAUTH_PARAMS = {
+    site: 'https://accounts.google.com',
+    authorize_url: '/o/oauth2/auth',
+    token_url: '/o/oauth2/token',
+  }
 
   attr_accessor :spreadsheet_key
 
@@ -18,7 +23,7 @@ class GoogleSpreadsheetRecorder
   end
 
   def worksheets
-    url = "https://spreadsheets.google.com/feeds/worksheets/#{@spreadsheet_key}/private/full"
+    url = "#{SCOPE}/worksheets/#{@spreadsheet_key}/private/full"
     response = @token.get(url)
     doc = Nokogiri::XML(response.body)
     doc.css('feed entry').map do |e|
@@ -30,7 +35,7 @@ class GoogleSpreadsheetRecorder
   end
 
   def rows(sheet_id)
-    url = "https://spreadsheets.google.com/feeds/list/#{@spreadsheet_key}/#{sheet_id}/private/full"
+    url = "#{SCOPE}/list/#{@spreadsheet_key}/#{sheet_id}/private/full"
     response = @token.get(url)
     doc = Nokogiri::XML(response.body)
     doc.css('entry').map do |e|
@@ -39,7 +44,7 @@ class GoogleSpreadsheetRecorder
   end
 
   def send_row(row_data, sheet_id)
-    url = "https://spreadsheets.google.com/feeds/list/#{@spreadsheet_key}/#{sheet_id}/private/full"
+    url = "#{SCOPE}/list/#{@spreadsheet_key}/#{sheet_id}/private/full"
     body = <<-"EOS"
       <entry xmlns="http://www.w3.org/2005/Atom"
           xmlns:gsx="http://schemas.google.com/spreadsheets/2006/extended">
@@ -53,13 +58,7 @@ class GoogleSpreadsheetRecorder
   private
 
   def load_or_refresh_token(client_id, client_secret, token_file)
-    oauth_params = {
-      site: 'https://accounts.google.com',
-      authorize_url: '/o/oauth2/auth',
-      token_url: '/o/oauth2/token',
-    }
-
-    client = OAuth2::Client.new(client_id, client_secret, oauth_params)
+    client = OAuth2::Client.new(client_id, client_secret, OAUTH_PARAMS)
 
     if File.exists?(token_file)
       token = OAuth2::AccessToken.from_hash(client, YAML.load_file(token_file))
